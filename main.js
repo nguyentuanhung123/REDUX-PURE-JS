@@ -12,7 +12,15 @@ const initialState = [
 ]
 
 const hobbyReducer = (state = initialState, action) => {
-    return state
+    switch(action.type) {
+        case 'ADD_HOBBY': {
+            const newList = [...state];
+            newList.push(action.payload);
+            return newList;
+        }
+        default:
+            return state;
+    }
 }
 
 const store = createStore(hobbyReducer);
@@ -29,7 +37,7 @@ const renderHobbyList = (hobbyList) => {
     if(!ulElement) return;
 
     // reset previous content of ul
-    ulElement.inner = '';
+    ulElement.innerHTML = '';
 
     for (const hobby of hobbyList) {
         const liElement = document.createElement('li');
@@ -44,3 +52,38 @@ const renderHobbyList = (hobbyList) => {
 const initialHobbyList = store.getState(); // Lấy giá trị hiện tại của store
 console.log('InitialHobbyList: ', initialHobbyList);
 renderHobbyList(initialHobbyList);
+
+// HANDLE FORM SUBMIT
+const hobbyFormElement = document.querySelector("#hobbyFormId");
+if(hobbyFormElement){
+    const handleFormSubmit = (e) => {
+        //PREVENT BROWSER FROM RELOADING
+        e.preventDefault();
+
+        const hobbyTextElement = hobbyFormElement.querySelector("#hobbyTextId");
+        if(!hobbyTextElement) return;
+
+        console.log('SUBMIT', hobbyTextElement.value);
+        const action = {
+            type: 'ADD_HOBBY',
+            payload: hobbyTextElement.value
+        };
+        store.dispatch(action);
+
+        //reset form
+        hobbyFormElement.reset();
+    }
+
+    hobbyFormElement.addEventListener('submit', handleFormSubmit);
+    
+}
+
+/**
+ * Mỗi lần state thay đổi thì sẽ làm gì đấy
+ * store.getState() : Lấy giá trị state mới nhất sau khi thay đổi đang được lưu trữ trong store
+ */
+store.subscribe(() => {
+    console.log('STATE UPDATE: ', store.getState());
+    const newHobbyList = store.getState();
+    renderHobbyList(newHobbyList);
+})
